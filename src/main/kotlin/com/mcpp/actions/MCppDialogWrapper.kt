@@ -30,7 +30,7 @@ class MCppDialogWrapper : DialogWrapper(true) {
     var listModel = DefaultListModel<String>()
     val list = JBList(listModel)
     val location_info_label = InformationLabel("")
-
+    var selectedTemplate: String? = null
     init {
         init()
         title = "Modern Cpp New Project"
@@ -112,6 +112,24 @@ class MCppDialogWrapper : DialogWrapper(true) {
                 location_info_label.text  =  browse_folder.textField.text + "/" + name.text
             }
         })
+
+        projectTemplate.document.addDocumentListener(object: DocumentListener{
+            override fun insertUpdate(e: DocumentEvent?) {
+                updateSelectedTemplate()
+            }
+
+            override fun removeUpdate(e: DocumentEvent?) {
+                updateSelectedTemplate()
+            }
+
+            override fun changedUpdate(e: DocumentEvent?) {
+                updateSelectedTemplate()
+            }
+            fun updateSelectedTemplate(){
+                selectedTemplate = projectTemplate.text
+            }
+        })
+
         list.border = CustomRenderer()
         list.selectionMode = ListSelectionModel.SINGLE_SELECTION
 

@@ -12,6 +12,15 @@ repositories {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
+
+    // https://central.sonatype.dev/artifact/org.eclipse.jgit/org.eclipse.jgit/
+    implementation 'org.eclipse.jgit:org.eclipse.jgit:6.4.0.202211300538-r'
+    // SSH support for JGit based on Apache MINA sshd
+    implementation 'org.eclipse.jgit:org.eclipse.jgit.ssh.apache:6.4.0.202211300538-r'
+    // GPG support for JGit based on BouncyCastle (commit signing)
+    implementation 'org.eclipse.jgit:org.eclipse.jgit.gpg.bc:6.4.0.202211300538-r'
+
+    implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.14.1'
 }
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
