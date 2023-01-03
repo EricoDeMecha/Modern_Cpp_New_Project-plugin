@@ -1,6 +1,10 @@
 package com.mcpp.actions
 
+
+import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.openapi.ui.TextBrowseFolderListener
+import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBList
 import com.intellij.uiDesigner.core.AbstractLayout
@@ -10,12 +14,14 @@ import com.intellij.util.ui.UIUtil
 import java.awt.*
 import javax.swing.*
 import javax.swing.border.Border
+import javax.swing.event.ListSelectionEvent
+import javax.swing.event.ListSelectionListener
+
 
 class MCppDialogWrapper : DialogWrapper(true) {
     val panel = JPanel(GridBagLayout())
     val name = JTextField()
-    val location = JTextField()
-    val browse_button = JButton("...")
+    val browse_folder = TextFieldWithBrowseButton()
     val projectTemplate = JTextField()
     val addBtn = JButton("Add")
     var listModel = DefaultListModel<String>()
@@ -24,8 +30,22 @@ class MCppDialogWrapper : DialogWrapper(true) {
     init {
         init()
         title = "Modern Cpp New Project"
+        val state = PersistentTemplates.getInstance().state
+        if(state != null){
+            state.templates.add(state.lefticus_template)
+            projectTemplate.text = state.templates.firstOrNull { it == state.lefticus_template}
+        }
+        addBtn.isDefaultCapable = true
+        projectTemplate.addActionListener{
+            addBtn.requestFocusInWindow()
+        }
     }
 
+    override fun createActions(): Array<Action> {
+        val actions = super.createActions()
+        actions[0].putValue(Action.NAME, "Create")
+        return actions
+    }
     override fun createCenterPanel(): JComponent {
         val gb = GridBag()
             .setDefaultInsets(Insets(0, 0, AbstractLayout.DEFAULT_VGAP, AbstractLayout.DEFAULT_HGAP))
@@ -33,31 +53,44 @@ class MCppDialogWrapper : DialogWrapper(true) {
             .setDefaultFill(GridBagConstraints.HORIZONTAL)
 
         panel.preferredSize = Dimension(500, 300)
+//        panel.preferredSize = Dimension(preferredSize.width*2, preferredSize.height*2)
 
-        browse_button.addActionListener{
-            TODO("Implement an action listener for browsing")
-        }
         addBtn.addActionListener {
             val template_text_field = projectTemplate.text
             if (!template_text_field.isEmpty()) {
                 listModel.addElement(template_text_field)
+                PersistentTemplates.getInstance().state?.templates?.add(projectTemplate.text)
                 projectTemplate.text = ""
             }
         }
+        browse_folder.addBrowseFolderListener(TextBrowseFolderListener(FileChooserDescriptor(
+            false,
+            true,
+            false,
+            false,
+            false,
+            false
+        )))
         list.border = CustomRenderer()
         list.selectionMode = ListSelectionModel.SINGLE_SELECTION
+
+        list.addListSelectionListener( object: ListSelectionListener {
+            override fun valueChanged(e: ListSelectionEvent?) {
+                val selectedValue = list.selectedValue as String
+                projectTemplate.text = selectedValue
+            }
+        })
 //        Add elements to the panel
         panel.add(label("Name"), gb.nextLine().next().weightx(0.2))
         panel.add(name, gb.next().next().weightx(0.8))
         panel.add(label("Location"), gb.nextLine().next().weightx(0.2))
-        panel.add(location, gb.next().next().weightx(0.8))
+        panel.add(browse_folder, gb.next().next().weightx(0.8))
         panel.add(label("Project Template"), gb.nextLine().next().weightx(0.2))
         panel.add(projectTemplate, gb.next().next().weightx(0.8))
         panel.add(addBtn, gb.next().next().weightx(0.2))
         panel.add(JLabel(""), gb.nextLine().next().weightx(0.2))
         panel.add(list, gb.next().next().weightx(0.8))
-        // handle events
-        projectTemplate.text = list.selectedValue
+
         return panel
     }
 
