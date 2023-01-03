@@ -1,6 +1,7 @@
 package com.mcpp.actions
 
 
+import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.TextBrowseFolderListener
@@ -14,6 +15,8 @@ import com.intellij.util.ui.UIUtil
 import java.awt.*
 import javax.swing.*
 import javax.swing.border.Border
+import javax.swing.event.DocumentEvent
+import javax.swing.event.DocumentListener
 import javax.swing.event.ListSelectionEvent
 import javax.swing.event.ListSelectionListener
 
@@ -26,15 +29,19 @@ class MCppDialogWrapper : DialogWrapper(true) {
     val addBtn = JButton("Add")
     var listModel = DefaultListModel<String>()
     val list = JBList(listModel)
+    val location_info_label = InformationLabel("")
 
     init {
         init()
         title = "Modern Cpp New Project"
-        val state = PersistentTemplates.getInstance().state
-        if(state != null){
-            state.templates.add(state.lefticus_template)
-            projectTemplate.text = state.templates.firstOrNull { it == state.lefticus_template}
+        /*Get the persistent storage*/
+        val mCppComponent = ServiceManager.getService(MCppComponent::class.java)
+        mCppComponent.addValue("https://github.com/cpp-best-practices/cmake_conan_boilerplate_template.git")
+        mCppComponent.addValue("https://github.com/filipdutescu/modern-cpp-template.git")
+        for(element in mCppComponent.getState()?.values!!){
+            listModel.addElement(element)
         }
+        /*Change focus to the add button*/
         addBtn.isDefaultCapable = true
         projectTemplate.addActionListener{
             addBtn.requestFocusInWindow()
@@ -59,10 +66,27 @@ class MCppDialogWrapper : DialogWrapper(true) {
             val template_text_field = projectTemplate.text
             if (!template_text_field.isEmpty()) {
                 listModel.addElement(template_text_field)
-                PersistentTemplates.getInstance().state?.templates?.add(projectTemplate.text)
+                val mCppComponent = ServiceManager.getService(MCppComponent::class.java)
+                mCppComponent.addValue(template_text_field)
                 projectTemplate.text = ""
             }
         }
+        name.document.addDocumentListener(object: DocumentListener{
+            override fun insertUpdate(e: DocumentEvent?) {
+                updateLocationField()
+            }
+
+            override fun removeUpdate(e: DocumentEvent?) {
+                updateLocationField()
+            }
+
+            override fun changedUpdate(e: DocumentEvent?) {
+                updateLocationField()
+            }
+            fun updateLocationField(){
+                location_info_label.text  =  browse_folder.textField.text + "/" + name.text
+            }
+        })
         browse_folder.addBrowseFolderListener(TextBrowseFolderListener(FileChooserDescriptor(
             false,
             true,
@@ -71,6 +95,23 @@ class MCppDialogWrapper : DialogWrapper(true) {
             false,
             false
         )))
+
+        browse_folder.textField.document.addDocumentListener(object: DocumentListener{
+            override fun insertUpdate(e: DocumentEvent?) {
+                updateLocationField()
+            }
+
+            override fun removeUpdate(e: DocumentEvent?) {
+                updateLocationField()
+            }
+
+            override fun changedUpdate(e: DocumentEvent?) {
+                updateLocationField()
+            }
+            fun updateLocationField(){
+                location_info_label.text  =  browse_folder.textField.text + "/" + name.text
+            }
+        })
         list.border = CustomRenderer()
         list.selectionMode = ListSelectionModel.SINGLE_SELECTION
 
@@ -85,6 +126,8 @@ class MCppDialogWrapper : DialogWrapper(true) {
         panel.add(name, gb.next().next().weightx(0.8))
         panel.add(label("Location"), gb.nextLine().next().weightx(0.2))
         panel.add(browse_folder, gb.next().next().weightx(0.8))
+        panel.add(JLabel(""), gb.nextLine().next().weightx(0.2))
+        panel.add(location_info_label, gb.next().next().weightx(0.2))
         panel.add(label("Project Template"), gb.nextLine().next().weightx(0.2))
         panel.add(projectTemplate, gb.next().next().weightx(0.8))
         panel.add(addBtn, gb.next().next().weightx(0.2))
@@ -93,7 +136,6 @@ class MCppDialogWrapper : DialogWrapper(true) {
 
         return panel
     }
-
     private fun label(text: String): JComponent {
         val label = JBLabel(text)
         label.componentStyle = UIUtil.ComponentStyle.SMALL
@@ -140,5 +182,17 @@ class CustomRenderer : ListCellRenderer<String>, Border {
 
     override fun isBorderOpaque(): Boolean {
         return false
+    }
+}
+class InformationLabel(text: String): JLabel(text){
+    init {
+        font  = font.deriveFont(Font.ITALIC)
+    }
+
+    override fun paintComponent(g: Graphics?) {
+        val g2 = g as Graphics2D
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+        g2.color = Color(0, 0, 0, 128)
+        super.paintComponent(g)
     }
 }
