@@ -39,7 +39,7 @@ jobs:
           distribution: corretto
           java-version: 17
 
-      - name: Build rust plugin
+      - name: Build MCpp plugin
         uses: gradle/gradle-build-action@v1
         with:
           arguments: ":plugin:buildPlugin"
