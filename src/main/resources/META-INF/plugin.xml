@@ -1,0 +1,24 @@
+<idea-plugin>
+    <id>org.example.Modern-Cpp-New-Project</id>
+    <name>Modern Cpp New Project</name>
+    <vendor email="support@mcpp.com" url="http://www.mcpp.com">MCpp</vendor>
+
+    <description><![CDATA[
+    Create an Modern Cpp project based of a github standard template
+    ]]></description>
+
+    <!-- please see https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html
+         on how to target different products -->
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Add your extensions here -->
+    </extensions>
+
+    <actions>
+        <!-- Add your actions here -->
+        <action id="MCPP.CreateProject" class="com.mcpp.actions.CreateProjectAction" text="Modern Cpp New Project">
+            <add-to-group group-id="NewProjectOrModuleGroup" anchor="last"/>
+        </action>
+    </actions>
+</idea-plugin>
