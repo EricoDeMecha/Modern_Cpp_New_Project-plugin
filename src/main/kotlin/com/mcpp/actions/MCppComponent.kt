@@ -59,4 +59,13 @@ class MCppComponent: PersistentStateComponent<MCppComponent.MyState> {
     {
         myState.values.remove(value)
     }
+
+    /**
+     * Get last
+     *
+     * @return
+     */
+    fun getLast(): String {
+        return myState.values.last()
+    }
 }

@@ -99,9 +99,10 @@ class MCppDialogWrapper : DialogWrapper(true) {
         addBtn.addActionListener {
             val template_text_field = projectTemplate.text
             if (!template_text_field.isEmpty()) {
-                listModel.addElement(template_text_field)
+//                listModel.addElement(template_text_field)
                 val mCppComponent = ServiceManager.getService(MCppComponent::class.java)
                 mCppComponent.addValue(template_text_field)
+                listModel.addElement(mCppComponent.getLast())
                 projectTemplate.text = ""
             }
         }
