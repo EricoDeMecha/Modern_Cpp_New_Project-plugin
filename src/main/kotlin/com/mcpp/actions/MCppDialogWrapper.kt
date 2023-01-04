@@ -22,6 +22,11 @@ import javax.swing.event.ListSelectionListener
 import javax.swing.text.AbstractDocument
 
 
+/**
+ * M cpp dialog wrapper
+ *
+ * @constructor Create empty M cpp dialog wrapper
+ */
 class MCppDialogWrapper : DialogWrapper(true) {
     val panel = JPanel(GridBagLayout())
     val name = JTextField()
@@ -33,20 +38,21 @@ class MCppDialogWrapper : DialogWrapper(true) {
     val list = JBList(listModel)
     val location_info_label = InformationLabel("")
     var selectedTemplate: String? = null
-    val m_ok  = this.okAction
+    val m_ok = this.okAction
+
     init {
         init()
         title = "Modern Cpp New Project"
         /*Get the persistent storage*/
         val mCppComponent = ServiceManager.getService(MCppComponent::class.java)
-/*        mCppComponent.addValue("https://github.com/cpp-best-practices/cmake_conan_boilerplate_template.git")
-        mCppComponent.addValue("https://github.com/filipdutescu/modern-cpp-template.git")*/
-        for(element in mCppComponent.getState().values){
+        /*        mCppComponent.addValue("https://github.com/cpp-best-practices/cmake_conan_boilerplate_template.git")
+                mCppComponent.addValue("https://github.com/filipdutescu/modern-cpp-template.git")*/
+        for (element in mCppComponent.getState().values) {
             listModel.addElement(element)
         }
         /*Change focus to the add button*/
         addBtn.isDefaultCapable = true
-        projectTemplate.addActionListener{
+        projectTemplate.addActionListener {
             addBtn.requestFocusInWindow()
         }
         m_ok.isEnabled = false
@@ -58,7 +64,13 @@ class MCppDialogWrapper : DialogWrapper(true) {
         return actions
     }
 
-    fun AbstractDocument.addUpdateFunc(updateFunc: () -> Unit){
+    /**
+     * Add update func
+     *
+     * @param updateFunc
+     * @receiver
+     */
+    fun AbstractDocument.addUpdateFunc(updateFunc: () -> Unit) {
         val documentListener = object : DocumentListener {
             override fun insertUpdate(e: DocumentEvent?) {
                 updateFunc()
@@ -96,33 +108,37 @@ class MCppDialogWrapper : DialogWrapper(true) {
         removeBtn.addActionListener {
             val mCppComponent = ServiceManager.getService(MCppComponent::class.java)
             val selectedIndex = list.selectedIndex
-            if (selectedIndex != -1 ) {
+            if (selectedIndex != -1) {
                 mCppComponent.removeValue(listModel.getElementAt(selectedIndex))
                 listModel.removeElementAt(list.selectedIndex)
                 projectTemplate.text = ""
             }
         }
         (name.document as AbstractDocument).addUpdateFunc { locationFieldUpdate() }
-        browse_folder.addBrowseFolderListener(TextBrowseFolderListener(FileChooserDescriptor(
-            false,
-            true,
-            false,
-            false,
-            false,
-            false
-        )))
+        browse_folder.addBrowseFolderListener(
+            TextBrowseFolderListener(
+                FileChooserDescriptor(
+                    false,
+                    true,
+                    false,
+                    false,
+                    false,
+                    false
+                )
+            )
+        )
 
         (browse_folder.textField.document as AbstractDocument).addUpdateFunc { locationFieldUpdate() }
 
-        (projectTemplate.document as AbstractDocument ).addUpdateFunc { templateFieldUpdate() }
+        (projectTemplate.document as AbstractDocument).addUpdateFunc { templateFieldUpdate() }
 
         list.border = CustomRenderer()
         list.selectionMode = ListSelectionModel.SINGLE_SELECTION
 
-        list.addListSelectionListener( object: ListSelectionListener {
+        list.addListSelectionListener(object : ListSelectionListener {
             override fun valueChanged(e: ListSelectionEvent?) {
                 val selected_index = list.selectedIndex
-                if(selected_index != -1){
+                if (selected_index != -1) {
                     projectTemplate.text = listModel.elementAt(selected_index)
                 }
             }
@@ -145,6 +161,7 @@ class MCppDialogWrapper : DialogWrapper(true) {
 
         return panel
     }
+
     private fun label(text: String): JComponent {
         val label = JBLabel(text)
         label.componentStyle = UIUtil.ComponentStyle.SMALL
@@ -152,20 +169,35 @@ class MCppDialogWrapper : DialogWrapper(true) {
         label.border = JBUI.Borders.empty(0, 5, 2, 0)
         return label
     }
-    fun locationFieldUpdate(){
-        if(browse_folder.textField.text.isEmpty()){
-            location_info_label.text = "~/"+ name.text
-        }else {
-            location_info_label.text  =  browse_folder.textField.text + "/" + name.text
+
+    /**
+     * Location field update
+     *
+     */
+    fun locationFieldUpdate() {
+        if (browse_folder.textField.text.isEmpty()) {
+            location_info_label.text = "~/" + name.text
+        } else {
+            location_info_label.text = browse_folder.textField.text + "/" + name.text
         }
         m_ok.isEnabled = !name.text.isEmpty() && !browse_folder.text.isEmpty() && !projectTemplate.text.isEmpty()
     }
-    fun templateFieldUpdate(){
+
+    /**
+     * Template field update
+     *
+     */
+    fun templateFieldUpdate() {
         m_ok.isEnabled = !name.text.isEmpty() && !browse_folder.text.isEmpty() && !projectTemplate.text.isEmpty()
         selectedTemplate = projectTemplate.text
     }
 }
 
+/**
+ * Custom renderer
+ *
+ * @constructor Create empty Custom renderer
+ */
 class CustomRenderer : ListCellRenderer<String>, Border {
     private val label = JBLabel()
     var insets = Insets(10, 10, 10, 10)
@@ -205,9 +237,17 @@ class CustomRenderer : ListCellRenderer<String>, Border {
         return false
     }
 }
-class InformationLabel(text: String): JLabel(text){
+
+/**
+ * Information label
+ *
+ * @constructor
+ *
+ * @param text
+ */
+class InformationLabel(text: String) : JLabel(text) {
     init {
-        font  = font.deriveFont(Font.ITALIC)
+        font = font.deriveFont(Font.ITALIC)
     }
 
     override fun paintComponent(g: Graphics?) {
