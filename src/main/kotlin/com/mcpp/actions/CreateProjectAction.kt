@@ -46,6 +46,7 @@ class CreateProjectAction : AnAction(){
         if(full_path.exists()){
             TODO("1. Copy the sources to a new location \n" +
                     "2. Delete .git and open the project \n")
+
         }else{
             try{
                 Git.cloneRepository()
@@ -59,5 +60,7 @@ class CreateProjectAction : AnAction(){
             }
         }
     }
+
+
 }
 

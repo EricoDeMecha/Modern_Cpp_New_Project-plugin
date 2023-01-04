@@ -19,6 +19,7 @@ import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 import javax.swing.event.ListSelectionEvent
 import javax.swing.event.ListSelectionListener
+import javax.swing.text.AbstractDocument
 
 
 class MCppDialogWrapper : DialogWrapper(true) {
@@ -26,19 +27,21 @@ class MCppDialogWrapper : DialogWrapper(true) {
     val name = JTextField()
     val browse_folder = TextFieldWithBrowseButton()
     val projectTemplate = JTextField()
-    val addBtn = JButton("Add")
+    val addBtn = JButton("+")
+    val removeBtn = JButton("-")
     var listModel = DefaultListModel<String>()
     val list = JBList(listModel)
     val location_info_label = InformationLabel("")
     var selectedTemplate: String? = null
+    val m_ok  = this.okAction
     init {
         init()
         title = "Modern Cpp New Project"
         /*Get the persistent storage*/
         val mCppComponent = ServiceManager.getService(MCppComponent::class.java)
-        mCppComponent.addValue("https://github.com/cpp-best-practices/cmake_conan_boilerplate_template.git")
-        mCppComponent.addValue("https://github.com/filipdutescu/modern-cpp-template.git")
-        for(element in mCppComponent.getState()?.values!!){
+/*        mCppComponent.addValue("https://github.com/cpp-best-practices/cmake_conan_boilerplate_template.git")
+        mCppComponent.addValue("https://github.com/filipdutescu/modern-cpp-template.git")*/
+        for(element in mCppComponent.getState().values){
             listModel.addElement(element)
         }
         /*Change focus to the add button*/
@@ -46,6 +49,7 @@ class MCppDialogWrapper : DialogWrapper(true) {
         projectTemplate.addActionListener{
             addBtn.requestFocusInWindow()
         }
+        m_ok.isEnabled = false
     }
 
     override fun createActions(): Array<Action> {
@@ -53,6 +57,24 @@ class MCppDialogWrapper : DialogWrapper(true) {
         actions[0].putValue(Action.NAME, "Create")
         return actions
     }
+
+    fun AbstractDocument.addUpdateFunc(updateFunc: () -> Unit){
+        val documentListener = object : DocumentListener {
+            override fun insertUpdate(e: DocumentEvent?) {
+                updateFunc()
+            }
+
+            override fun changedUpdate(e: DocumentEvent?) {
+                updateFunc()
+            }
+
+            override fun removeUpdate(e: DocumentEvent?) {
+                updateFunc()
+            }
+        }
+        addDocumentListener(documentListener)
+    }
+
     override fun createCenterPanel(): JComponent {
         val gb = GridBag()
             .setDefaultInsets(Insets(0, 0, AbstractLayout.DEFAULT_VGAP, AbstractLayout.DEFAULT_HGAP))
@@ -71,22 +93,16 @@ class MCppDialogWrapper : DialogWrapper(true) {
                 projectTemplate.text = ""
             }
         }
-        name.document.addDocumentListener(object: DocumentListener{
-            override fun insertUpdate(e: DocumentEvent?) {
-                updateLocationField()
+        removeBtn.addActionListener {
+            val mCppComponent = ServiceManager.getService(MCppComponent::class.java)
+            val selectedIndex = list.selectedIndex
+            if (selectedIndex != -1 ) {
+                mCppComponent.removeValue(listModel.getElementAt(selectedIndex))
+                listModel.removeElementAt(list.selectedIndex)
+                projectTemplate.text = ""
             }
-
-            override fun removeUpdate(e: DocumentEvent?) {
-                updateLocationField()
-            }
-
-            override fun changedUpdate(e: DocumentEvent?) {
-                updateLocationField()
-            }
-            fun updateLocationField(){
-                location_info_label.text  =  browse_folder.textField.text + "/" + name.text
-            }
-        })
+        }
+        (name.document as AbstractDocument).addUpdateFunc { locationFieldUpdate() }
         browse_folder.addBrowseFolderListener(TextBrowseFolderListener(FileChooserDescriptor(
             false,
             true,
@@ -96,47 +112,19 @@ class MCppDialogWrapper : DialogWrapper(true) {
             false
         )))
 
-        browse_folder.textField.document.addDocumentListener(object: DocumentListener{
-            override fun insertUpdate(e: DocumentEvent?) {
-                updateLocationField()
-            }
+        (browse_folder.textField.document as AbstractDocument).addUpdateFunc { locationFieldUpdate() }
 
-            override fun removeUpdate(e: DocumentEvent?) {
-                updateLocationField()
-            }
-
-            override fun changedUpdate(e: DocumentEvent?) {
-                updateLocationField()
-            }
-            fun updateLocationField(){
-                location_info_label.text  =  browse_folder.textField.text + "/" + name.text
-            }
-        })
-
-        projectTemplate.document.addDocumentListener(object: DocumentListener{
-            override fun insertUpdate(e: DocumentEvent?) {
-                updateSelectedTemplate()
-            }
-
-            override fun removeUpdate(e: DocumentEvent?) {
-                updateSelectedTemplate()
-            }
-
-            override fun changedUpdate(e: DocumentEvent?) {
-                updateSelectedTemplate()
-            }
-            fun updateSelectedTemplate(){
-                selectedTemplate = projectTemplate.text
-            }
-        })
+        (projectTemplate.document as AbstractDocument ).addUpdateFunc { templateFieldUpdate() }
 
         list.border = CustomRenderer()
         list.selectionMode = ListSelectionModel.SINGLE_SELECTION
 
         list.addListSelectionListener( object: ListSelectionListener {
             override fun valueChanged(e: ListSelectionEvent?) {
-                val selectedValue = list.selectedValue as String
-                projectTemplate.text = selectedValue
+                val selected_index = list.selectedIndex
+                if(selected_index != -1){
+                    projectTemplate.text = listModel.elementAt(selected_index)
+                }
             }
         })
 //        Add elements to the panel
@@ -150,6 +138,9 @@ class MCppDialogWrapper : DialogWrapper(true) {
         panel.add(projectTemplate, gb.next().next().weightx(0.8))
         panel.add(addBtn, gb.next().next().weightx(0.2))
         panel.add(JLabel(""), gb.nextLine().next().weightx(0.2))
+        panel.add(JLabel(""), gb.next().next().weightx(0.2))
+        panel.add(removeBtn, gb.next().next().weightx(0.2))
+        panel.add(JLabel(""), gb.nextLine().next().weightx(0.2))
         panel.add(list, gb.next().next().weightx(0.8))
 
         return panel
@@ -160,6 +151,18 @@ class MCppDialogWrapper : DialogWrapper(true) {
         label.fontColor = UIUtil.FontColor.BRIGHTER
         label.border = JBUI.Borders.empty(0, 5, 2, 0)
         return label
+    }
+    fun locationFieldUpdate(){
+        if(browse_folder.textField.text.isEmpty()){
+            location_info_label.text = "~/"+ name.text
+        }else {
+            location_info_label.text  =  browse_folder.textField.text + "/" + name.text
+        }
+        m_ok.isEnabled = !name.text.isEmpty() && !browse_folder.text.isEmpty() && !projectTemplate.text.isEmpty()
+    }
+    fun templateFieldUpdate(){
+        m_ok.isEnabled = !name.text.isEmpty() && !browse_folder.text.isEmpty() && !projectTemplate.text.isEmpty()
+        selectedTemplate = projectTemplate.text
     }
 }
 

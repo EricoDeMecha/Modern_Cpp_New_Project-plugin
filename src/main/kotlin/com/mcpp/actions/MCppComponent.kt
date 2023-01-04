@@ -12,7 +12,7 @@ class MCppComponent: PersistentStateComponent<MCppComponent.MyState> {
     data class MyState(var values:  MutableSet<String> = mutableSetOf())
     private var myState = MyState()
 
-    override fun getState(): MyState? {
+    override fun getState(): MyState {
         return myState
     }
 
@@ -24,7 +24,7 @@ class MCppComponent: PersistentStateComponent<MCppComponent.MyState> {
         myState.values.add(value)
     }
 
-    fun getValue(i: Int): String?{
+    fun getValue(i: Int): String {
         return myState.values.elementAt(i)
     }
     fun removeValue(value: String)
