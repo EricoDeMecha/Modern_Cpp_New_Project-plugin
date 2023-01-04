@@ -1,0 +1,47 @@
+name: Reusable Unit Tests
+
+on: [ workflow_call ]
+
+env:
+  XDG_CACHE_HOME: "~/.config/"
+
+jobs:
+  baseUnitTest:
+    name: Gradle 7.6 @ ubuntu-latest
+    uses: ./.github/workflows/reusable-single-unitTest.yml
+    with:
+      gradleVersion: 7.6
+      os: ubuntu-latest
+      script: |
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /usr/local/lib/android
+        sudo rm -rf /opt/ghc
+
+  unitTests:
+    name: Gradle ${{ matrix.gradleVersion }} @ ${{ matrix.os }}
+    needs: baseUnitTest
+    uses: ./.github/workflows/reusable-single-unitTest.yml
+    with:
+      gradleVersion: ${{ matrix.gradleVersion }}
+      os: ${{ matrix.os }}
+      script: ${{ matrix.script }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        gradleVersion:
+          - 7.3
+          - 7.6
+        os:
+          - windows-latest
+          - ubuntu-latest
+          - macos-latest
+        include:
+          - os: ubuntu-latest
+            script: |
+              sudo rm -rf /usr/share/dotnet
+              sudo rm -rf /usr/local/lib/android
+              sudo rm -rf /opt/ghc
+        exclude:
+          - os: ubuntu-latest
+            gradleVersion: 7.6

@@ -4,10 +4,14 @@ plugins {
 }
 
 group 'org.example'
-version '1.0-SNAPSHOT'
+version '1.0.1'
 
 repositories {
     mavenCentral()
+}
+
+publishPlugin {
+    token.set(System.getenv("ORG_GRADLE_PROJECT_intellijPublishToken"))
 }
 
 dependencies {
@@ -31,6 +35,7 @@ dependencies {
 intellij {
     version = '2021.3.3'
 }
+
 patchPluginXml {
     changeNotes = """
       Add change notes here.<br>
