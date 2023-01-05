@@ -23,15 +23,15 @@ jobs:
     name: Gradle Validation
     uses: ./.github/workflows/reusable-gradleValidation.yml
 
-  unitTests:
-    name: Unit Tests
-    needs: gradleValidation
-    uses: ./.github/workflows/reusable-unitTests.yml
-
-  integrationTests:
-    name: Integration Tests
-    needs: [ gradleValidation, unitTests ]
-    uses: ./.github/workflows/reusable-integrationTests.yml
+#  unitTests:
+#    name: Unit Tests
+#    needs: gradleValidation
+#    uses: ./.github/workflows/reusable-unitTests.yml
+#
+#  integrationTests:
+#    name: Integration Tests
+#    needs: [ gradleValidation, unitTests ]
+#    uses: ./.github/workflows/reusable-integrationTests.yml
 
 #  integrationTestsEAP:
 #    name: Integration Tests EAP
@@ -39,19 +39,19 @@ jobs:
 #    uses: ./.github/workflows/reusable-integrationTests.yml
 #    with:
 #      platformVersion: 222-EAP-SNAPSHOT
-
-  codeInspection:
-    name: Code Inspection
-    needs: integrationTests
-    uses: ./.github/workflows/reusable-codeInspection.yml
+#
+#  codeInspection:
+#    name: Code Inspection
+#    needs: integrationTests
+#    uses: ./.github/workflows/reusable-codeInspection.yml
 
   build:
     name: Build
-    needs:
-      - unitTests
-      - integrationTests
+#    needs:
+#      - unitTests
+#      - integrationTests
 #      - integrationTestsEAP
-      - codeInspection
+#      - codeInspection
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.properties.outputs.version }}

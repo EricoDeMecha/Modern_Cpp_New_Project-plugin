@@ -4,7 +4,10 @@
     <vendor email="support@mcpp.com" url="http://www.mcpp.com">MCpp</vendor>
 
     <description><![CDATA[
-    Create an Modern Cpp project based of a github standard template
+    Tired of manually copying around a standard modern Cpp project template every time you create a new project? <br/>
+    Well look no more, for this is a solution to this problem. This plugin automates this mundane task by caching your template <br/>.
+    This way  you can even work offline for some time. It mainly provides a 'Modern Cpp New Project' option, and allows you to selected a template of your choice.
+    It goes on to configure your project in your new location. No muss, no fuss. <br/>
     ]]></description>
 
     <!-- please see https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html
@@ -15,7 +18,9 @@
         <!-- Add your extensions here -->
         <applicationService serviceImplementation="com.mcpp.actions.MCppComponent"/>
     </extensions>
-
+    <change-notes>
+       - Added a clear description of the plugin.
+    </change-notes>
     <actions>
         <!-- Add your actions here -->
         <action id="MCPP.CreateProject" class="com.mcpp.actions.CreateProjectAction" text="Modern Cpp New Project">
