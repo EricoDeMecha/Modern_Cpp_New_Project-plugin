@@ -9,7 +9,7 @@ It goes on to configure your project in your new location. No muss, no fuss.
 
 ## Support
 
-**Messed up for now** : _supports intellij 2022.3.3_  . Get it :laughing:
+**Messed up for now** : _supports intellij 2021.3.3_  . Get it :laughing:
 
 Add support to your clion version by editing the following section in the ```build.gradle```  file.
 ```kotlin
