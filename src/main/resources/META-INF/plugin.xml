@@ -18,9 +18,7 @@
         <!-- Add your extensions here -->
         <applicationService serviceImplementation="com.mcpp.actions.MCppComponent"/>
     </extensions>
-    <change-notes>
-       - Added a clear description of the plugin.
-    </change-notes>
+
     <actions>
         <!-- Add your actions here -->
         <action id="MCPP.CreateProject" class="com.mcpp.actions.CreateProjectAction" text="Modern Cpp New Project">

@@ -9,7 +9,12 @@ version '1.0.2'
 repositories {
     mavenCentral()
 }
-
+allprojects {
+    repositories {
+        //  ...
+        maven { url 'https://jitpack.io' }
+    }
+}
 //publishPlugin {
 //    token = project.property("publishToken")
 //}
@@ -24,11 +29,14 @@ dependencies {
     // GPG support for JGit based on BouncyCastle (commit signing)
     implementation 'org.eclipse.jgit:org.eclipse.jgit.gpg.bc:6.4.0.202211300538-r'
 
-    implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.14.1'
+    implementation ('org.apache.logging.log4j:log4j-slf4j-impl:2.14.1'){
+        exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+    }
     testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
+    implementation 'io.github.nsk90:kstatemachine:0.16.0'
 }
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
@@ -38,6 +46,5 @@ intellij {
 
 patchPluginXml {
     changeNotes = """
-      Add change notes here.<br>
-      <em>most HTML tags may be used</em>"""
+      - Added a clear description of the plugin.<br>"""
 }
