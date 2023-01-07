@@ -1,14 +1,7 @@
 <idea-plugin>
-    <id>org.example.Modern-Cpp-New-Project</id>
+    <id>com.github.ericodemecha.Modern_Cpp_New_Project-plugin</id>
     <name>Modern Cpp New Project</name>
-    <vendor email="support@mcpp.com" url="http://www.mcpp.com">MCpp</vendor>
-
-    <description><![CDATA[
-    Tired of manually copying around a standard modern Cpp project template every time you create a new project? <br/>
-    Well look no more, for this is a solution to this problem. This plugin automates this mundane task by caching your template <br/>.
-    This way  you can even work offline for some time. It mainly provides a 'Modern Cpp New Project' option, and allows you to selected a template of your choice.
-    It goes on to configure your project in your new location. No muss, no fuss. <br/>
-    ]]></description>
+    <vendor email="techcider4134@gmail.com" url="https://github.com/EricoDeMecha/Modern_Cpp_New_Project-plugin">MCpp</vendor>
 
     <!-- please see https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html
          on how to target different products -->

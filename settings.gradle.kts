@@ -1,0 +1,1 @@
+rootProject.name = "Modern-Cpp-New-Project"
