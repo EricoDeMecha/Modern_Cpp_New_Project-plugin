@@ -2,26 +2,22 @@
 name: Bug report
 about: Create a report to help us improve
 title: ''
-labels: bug
+labels: ''
 assignees: ''
-
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
-Add the full stack trace if available.
-If possible, run the failing task with `--stacktrace` flag.
+<!-- Please do not use this issue tracker for support or questions, use Forum or Slack listed here:
+     https://plugins.jetbrains.com/docs/intellij/getting-help.html
+     Please **always** provide link to sources if possible. -->
 
-**To Reproduce**
-Steps to reproduce the behavior – provide your build configuration, and/or link to the failing GitHub Action job.
+**Describe the bug:**
+<!-- A clear and concise description of what the bug is. -->
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+**Steps to reproduce:** 
+<!-- Steps to reproduce the issue. -->
 
-**Environment:**
- - OS: [e.g. macOS]
- - Gradle IntelliJ Plugin Version [e.g. 1.6.0]
- - Gradle Version [e.g. 7.4.2]
+**Expected behavior:**
+<!-- A clear and concise description of what you expected to happen. -->
 
-**Additional context**
-Add any other context about the problem here.
+**Additional context:**
+<!-- Add any other context about the problem here. -->

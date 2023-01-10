@@ -1,18 +1,20 @@
-name: Release
+# GitHub Actions Workflow created for handling the release process based on the draft release prepared
+# with the Build workflow. Running the publishPlugin task requires the PUBLISH_TOKEN secret provided.
 
+name: Release
 on:
   release:
     types: [prereleased, released]
 
-env:
-  XDG_CACHE_HOME: "~/.config/"
-
 jobs:
 
-  # Prepare and publish the Gradle Plugins repository
+  # Prepare and publish the plugin to the Marketplace repository
   release:
-    name: Release to Gradle Plugins
+    name: Publish Plugin
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
 
       # Check out current repository
@@ -21,22 +23,12 @@ jobs:
         with:
           ref: ${{ github.event.release.tag_name }}
 
+      # Setup Java 11 environment for the next steps
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
           distribution: zulu
           java-version: 11
-
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
-
-      - name: Cache XDG_CACHE_HOME
-        uses: actions/cache@v3
-        with:
-          path: ${{ env.XDG_CACHE_HOME }}
-          key: ${{ runner.os }}-XDG_CACHE_HOME-${{ hashFiles('**/*.gradle*') }}
-          restore-keys: |
-            ${{ runner.os }}-XDG_CACHE_HOME-
 
       # Set environment variables
       - name: Export Properties
@@ -62,17 +54,20 @@ jobs:
         run: |
           ./gradlew patchChangelog --release-note="$CHANGELOG"
 
-      # Publish the plugin to the Gradle Plugins
+      # Publish the plugin to the Marketplace
       - name: Publish Plugin
         env:
-          GRADLE_PUBLISH_KEY: ${{ secrets.PUBLISH_TOKEN }}
-        run: ./gradlew publishPlugin -DPUBLISH_TOKEN=$GRADLE_PUBLISH_KEY
+          PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
+          CERTIFICATE_CHAIN: ${{ secrets.CERTIFICATE_CHAIN }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          PRIVATE_KEY_PASSWORD: ${{ secrets.PRIVATE_KEY_PASSWORD }}
+        run: ./gradlew publishPlugin
 
       # Upload artifact as a release asset
       - name: Upload Release Asset
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload ${{ github.event.release.tag_name }} ./build/libs/*
+        run: gh release upload ${{ github.event.release.tag_name }} ./build/distributions/*
 
       # Create pull request
       - name: Create Pull Request
@@ -82,6 +77,7 @@ jobs:
         run: |
           VERSION="${{ github.event.release.tag_name }}"
           BRANCH="changelog-update-$VERSION"
+          LABEL="release changelog"
 
           git config user.email "action@github.com"
           git config user.name "GitHub Action"
@@ -89,9 +85,13 @@ jobs:
           git checkout -b $BRANCH
           git commit -am "Changelog update - $VERSION"
           git push --set-upstream origin $BRANCH
+          
+          gh label create "$LABEL" \
+            --description "Pull requests with release changelog update" \
+            || true
 
           gh pr create \
             --title "Changelog update - \`$VERSION\`" \
             --body "Current pull request contains patched \`CHANGELOG.md\` file for the \`$VERSION\` version." \
-            --base main \
+            --label "$LABEL" \
             --head $BRANCH

@@ -1,82 +1,59 @@
+# GitHub Actions Workflow created for testing and preparing the plugin release in following steps:
+# - validate Gradle Wrapper,
+# - run 'test' and 'verifyPlugin' tasks,
+# - run Qodana inspections,
+# - run 'buildPlugin' task and prepare artifact for the further tests,
+# - run 'runPluginVerifier' task,
+# - create a draft release.
+#
+# Workflow is triggered on push and pull_request events.
+#
+# GitHub Actions reference: https://help.github.com/en/actions
+#
+## JBIJPPTPL
+
 name: Build
 on:
-  # Trigger the workflow on pushes to only the 'master' branch (this avoids duplicate checks being run e.g. for dependabot pull requests)
+  # Trigger the workflow on pushes to only the 'main' branch (this avoids duplicate checks being run e.g. for dependabot pull requests)
   push:
     branches: [main]
-    paths-ignore: ['**.md', '.teamcity/**']
   # Trigger the workflow on any pull request
   pull_request:
-    paths-ignore: ['**.md', '.teamcity/**']
-
-
-# This allows a subsequently queued workflow run to interrupt previous runs
-concurrency:
-  group: '${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }}'
-  cancel-in-progress: true
-
-env:
-  XDG_CACHE_HOME: "~/.config/"
 
 jobs:
 
-  gradleValidation:
-    name: Gradle Validation
-    uses: ./.github/workflows/reusable-gradleValidation.yml
-
-#  unitTests:
-#    name: Unit Tests
-#    needs: gradleValidation
-#    uses: ./.github/workflows/reusable-unitTests.yml
-#
-#  integrationTests:
-#    name: Integration Tests
-#    needs: [ gradleValidation, unitTests ]
-#    uses: ./.github/workflows/reusable-integrationTests.yml
-
-#  integrationTestsEAP:
-#    name: Integration Tests EAP
-#    needs: gradleValidation
-#    uses: ./.github/workflows/reusable-integrationTests.yml
-#    with:
-#      platformVersion: 222-EAP-SNAPSHOT
-#
-#  codeInspection:
-#    name: Code Inspection
-#    needs: integrationTests
-#    uses: ./.github/workflows/reusable-codeInspection.yml
-
+  # Run Gradle Wrapper Validation Action to verify the wrapper's checksum
+  # Run verifyPlugin, IntelliJ Plugin Verifier, and test Gradle tasks
+  # Build plugin and provide the artifact for the next workflow jobs
   build:
     name: Build
-#    needs:
-#      - unitTests
-#      - integrationTests
-#      - integrationTestsEAP
-#      - codeInspection
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.properties.outputs.version }}
       changelog: ${{ steps.properties.outputs.changelog }}
     steps:
 
+      # Free GitHub Actions Environment Disk Space
+      - name: Maximize Build Space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+
+      # Check out current repository
       - name: Fetch Sources
         uses: actions/checkout@v3
 
+      # Validate wrapper
+      - name: Gradle Wrapper Validation
+        uses: gradle/wrapper-validation-action@v1.0.5
+
+      # Setup Java 11 environment for the next steps
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
           distribution: zulu
           java-version: 11
-
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
-
-      - name: Cache XDG_CACHE_HOME
-        uses: actions/cache@v3
-        with:
-          path: ${{ env.XDG_CACHE_HOME }}
-          key: ${{ runner.os }}-XDG_CACHE_HOME-${{ hashFiles('**/*.gradle*') }}
-          restore-keys: |
-            ${{ runner.os }}-XDG_CACHE_HOME-
 
       # Set environment variables
       - name: Export Properties
@@ -84,27 +61,78 @@ jobs:
         shell: bash
         run: |
           PROPERTIES="$(./gradlew properties --console=plain -q)"
-          NAME="$(echo "$PROPERTIES" | grep "^name:" | cut -f2- -d ' ')"
           VERSION="$(echo "$PROPERTIES" | grep "^version:" | cut -f2- -d ' ')"
-          ARTIFACT="$NAME-$VERSION.jar"
+          NAME="$(echo "$PROPERTIES" | grep "^pluginName:" | cut -f2- -d ' ')"
           CHANGELOG="$(./gradlew getChangelog --unreleased --no-header --console=plain -q)"
           CHANGELOG="${CHANGELOG//'%'/'%25'}"
           CHANGELOG="${CHANGELOG//$'\n'/'%0A'}"
           CHANGELOG="${CHANGELOG//$'\r'/'%0D'}"
 
           echo "::set-output name=version::$VERSION"
-          echo "::set-output name=artifact::$ARTIFACT"
+          echo "::set-output name=name::$NAME"
           echo "::set-output name=changelog::$CHANGELOG"
+          echo "::set-output name=pluginVerifierHomeDir::~/.pluginVerifier"
 
-      - name: Build Plugin
-        run: ./gradlew build -x test
+          ./gradlew listProductsReleases # prepare list of IDEs for Plugin Verifier
+
+#      # Run tests
+#      - name: Run Tests
+#        run: ./gradlew check
+#
+#      # Collect Tests Result of failed tests
+#      - name: Collect Tests Result
+#        if: ${{ failure() }}
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: tests-result
+#          path: ${{ github.workspace }}/build/reports/tests
+
+      # Upload Kover report to CodeCov
+      - name: Upload Code Coverage Report
+        uses: codecov/codecov-action@v3
+        with:
+          files: ${{ github.workspace }}/build/reports/kover/xml/report.xml
+
+      # Cache Plugin Verifier IDEs
+      - name: Setup Plugin Verifier IDEs Cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.properties.outputs.pluginVerifierHomeDir }}/ides
+          key: plugin-verifier-${{ hashFiles('build/listProductsReleases.txt') }}
+
+      # Run Verify Plugin task and IntelliJ Plugin Verifier tool
+      - name: Run Plugin Verification tasks
+        run: ./gradlew runPluginVerifier -Pplugin.verifier.home.dir=${{ steps.properties.outputs.pluginVerifierHomeDir }}
+
+      # Collect Plugin Verifier Result
+      - name: Collect Plugin Verifier Result
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: pluginVerifier-result
+          path: ${{ github.workspace }}/build/reports/pluginVerifier
+
+      # Run Qodana inspections
+      - name: Qodana - Code Inspection
+        uses: JetBrains/qodana-action@v2022.2.3
+
+      # Prepare plugin archive content for creating artifact
+      - name: Prepare Plugin Artifact
+        id: artifact
+        shell: bash
+        run: |
+          cd ${{ github.workspace }}/build/distributions
+          FILENAME=`ls *.zip`
+          unzip "$FILENAME" -d content
+
+          echo "::set-output name=filename::${FILENAME:0:-4}"
 
       # Store already-built plugin as an artifact for downloading
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ steps.properties.outputs.artifact }}
-          path: ./build/libs/${{ steps.properties.outputs.artifact }}
+          name: ${{ steps.artifact.outputs.filename }}
+          path: ./build/distributions/content/*/*
 
   # Prepare a draft release for GitHub Releases page for the manual verification
   # If accepted and published, release workflow would be triggered
@@ -113,6 +141,8 @@ jobs:
     if: github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
 
       # Check out current repository
