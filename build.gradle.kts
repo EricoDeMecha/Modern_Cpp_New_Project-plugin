@@ -36,7 +36,7 @@ dependencies {
     // GPG support for JGit based on BouncyCastle (commit signing)
     implementation("org.eclipse.jgit:org.eclipse.jgit.gpg.bc:6.4.0.202211300538-r")
 
-    implementation ("org.apache.logging.log4j:log4j-slf4j-impl:2.14.1"){
+    implementation ("org.apache.logging.log4j:log4j-slf4j-impl:2.19.0"){
         exclude(group="org.slf4j", module="slf4j-log4j12")
     }
     testImplementation ("org.junit.jupiter:junit-jupiter:5.9.2")
