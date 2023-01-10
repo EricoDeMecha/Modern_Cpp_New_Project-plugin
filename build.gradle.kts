@@ -39,10 +39,10 @@ dependencies {
     implementation ("org.apache.logging.log4j:log4j-slf4j-impl:2.14.1"){
         exclude(group="org.slf4j", module="slf4j-log4j12")
     }
-    testImplementation ("org.junit.jupiter:junit-jupiter:5.8.1")
-    testImplementation ("org.junit.jupiter:junit-jupiter:5.8.1")
-    testImplementation ("org.junit.jupiter:junit-jupiter:5.8.1")
-    testImplementation ("org.junit.jupiter:junit-jupiter:5.8.1")
+    testImplementation ("org.junit.jupiter:junit-jupiter:5.9.2")
+    testImplementation ("org.junit.jupiter:junit-jupiter:5.9.2")
+    testImplementation ("org.junit.jupiter:junit-jupiter:5.9.2")
+    testImplementation ("org.junit.jupiter:junit-jupiter:5.9.2")
     implementation ("io.github.nsk90:kstatemachine:0.16.0")
 }
 
