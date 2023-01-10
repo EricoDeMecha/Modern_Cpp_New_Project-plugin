@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Fixed
+- Fixed the publish task in ```release.yml```
+
 ## [1.1.0] - 2023-01-10
 
 ### Added
