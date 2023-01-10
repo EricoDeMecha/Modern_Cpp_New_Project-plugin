@@ -3,17 +3,13 @@
     <name>Modern Cpp New Project</name>
     <vendor email="techcider4134@gmail.com" url="https://github.com/EricoDeMecha/Modern_Cpp_New_Project-plugin">MCpp</vendor>
 
-    <!-- please see https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html
-         on how to target different products -->
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <!-- Add your extensions here -->
         <applicationService serviceImplementation="com.mcpp.actions.MCppComponent"/>
     </extensions>
 
     <actions>
-        <!-- Add your actions here -->
         <action id="MCPP.CreateProject" class="com.mcpp.actions.CreateProjectAction" text="Modern Cpp New Project">
             <add-to-group group-id="NewProjectOrModuleGroup" anchor="last"/>
         </action>
