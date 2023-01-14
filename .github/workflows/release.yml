@@ -23,11 +23,16 @@ jobs:
         with:
           ref: ${{ github.event.release.tag_name }}
 
-      # Setup Kotlin environment for the next steps
-      - name: Setup Kotlin
-        uses: actions/setup-kotlin@v1
+      # Validate wrapper
+      - name: Gradle Wrapper Validation
+        uses: gradle/wrapper-validation-action@v1.0.5
+
+      # Setup Java 11 environment for the next steps
+      - name: Setup Java
+        uses: actions/setup-java@v3
         with:
-          kotlin-version: 1.4.31
+          distribution: zulu
+          java-version: 11
 
       # Set environment variables
       - name: Export Properties
