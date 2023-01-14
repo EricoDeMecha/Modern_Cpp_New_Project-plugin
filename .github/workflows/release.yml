@@ -23,12 +23,11 @@ jobs:
         with:
           ref: ${{ github.event.release.tag_name }}
 
-      # Setup Java 11 environment for the next steps
-      - name: Setup Java
-        uses: actions/setup-java@v3
+      # Setup Kotlin environment for the next steps
+      - name: Setup Kotlin
+        uses: actions/setup-kotlin@v1
         with:
-          distribution: zulu
-          java-version: 11
+          kotlin-version: 1.4.31
 
       # Set environment variables
       - name: Export Properties
