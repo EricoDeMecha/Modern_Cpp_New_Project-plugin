@@ -43,7 +43,7 @@ dependencies {
     testImplementation ("org.junit.jupiter:junit-jupiter:5.9.2")
     testImplementation ("org.junit.jupiter:junit-jupiter:5.9.2")
     testImplementation ("org.junit.jupiter:junit-jupiter:5.9.2")
-    implementation ("io.github.nsk90:kstatemachine:0.16.0")
+    implementation ("io.github.nsk90:kstatemachine:0.17.0")
 }
 
 
