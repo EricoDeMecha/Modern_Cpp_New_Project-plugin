@@ -1,10 +1,7 @@
 package com.mcpp.actions
 
-import com.intellij.execution.runners.IndicatorIcon
 import com.intellij.openapi.diagnostic.thisLogger
 import com.intellij.openapi.progress.ProgressIndicator
-import com.intellij.openapi.ui.Messages
-import com.jetbrains.rd.util.string.printToString
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.errors.RepositoryNotFoundException
 import ru.nsk.kstatemachine.*
@@ -163,7 +160,7 @@ class TemplateCache(val git_repo: String, val path: Path, indicator: ProgressInd
     /**
      * Extract remote repo
      *
-     * @param repo_name
+     * @param repo_uri
      * @return
      */
     private fun extractRemoteRepo(repo_uri: String): String? {

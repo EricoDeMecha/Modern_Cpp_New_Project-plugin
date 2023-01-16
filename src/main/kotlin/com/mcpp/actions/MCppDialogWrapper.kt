@@ -1,7 +1,7 @@
 package com.mcpp.actions
 
 
-import com.intellij.openapi.components.ServiceManager
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.TextBrowseFolderListener
@@ -44,7 +44,7 @@ class MCppDialogWrapper : DialogWrapper(true) {
         init()
         title = "Modern Cpp New Project"
         /*Get the persistent storage*/
-        val mCppComponent = ServiceManager.getService(MCppComponent::class.java)
+        val mCppComponent = ApplicationManager.getApplication().getComponent(MCppComponent::class.java)
         /*        mCppComponent.addValue("https://github.com/cpp-best-practices/cmake_conan_boilerplate_template.git")
                 mCppComponent.addValue("https://github.com/filipdutescu/modern-cpp-template.git")*/
         for (element in mCppComponent.getState().values) {
@@ -100,14 +100,14 @@ class MCppDialogWrapper : DialogWrapper(true) {
             val template_text_field = projectTemplate.text
             if (!template_text_field.isEmpty()) {
 //                listModel.addElement(template_text_field)
-                val mCppComponent = ServiceManager.getService(MCppComponent::class.java)
+                val mCppComponent = ApplicationManager.getApplication().getComponent(MCppComponent::class.java)
                 mCppComponent.addValue(template_text_field)
                 listModel.addElement(mCppComponent.getLast())
                 projectTemplate.text = ""
             }
         }
         removeBtn.addActionListener {
-            val mCppComponent = ServiceManager.getService(MCppComponent::class.java)
+            val mCppComponent = ApplicationManager.getApplication().getComponent(MCppComponent::class.java)
             val selectedIndex = list.selectedIndex
             if (selectedIndex != -1) {
                 mCppComponent.removeValue(listModel.getElementAt(selectedIndex))
